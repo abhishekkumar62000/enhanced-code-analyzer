@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # End-to-end-Source-Code-Analysis-Generative-AI
 
 # How to run?
@@ -51,3 +52,6 @@ open up localhost:
 - GPT 3
 - ChoromaDB
 
+=======
+# enhanced-code-analyzer
+>>>>>>> de4bb9f8bc0d8848b75a16981ad05016915e535b
