@@ -8,3 +8,4 @@ requests
 beautifulsoup4
 chromadb
 gunicorn
+gitpython==3.1.43
