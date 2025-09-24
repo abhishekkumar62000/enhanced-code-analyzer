@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Advanced Analytics - Enhanced Code Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+        .main-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .analytics-header {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            border-radius: 15px;
+            padding: 30px;
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .metric-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .chart-container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .chart-3d {
+            min-height: 400px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        .complexity-heatmap {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .heatmap-cell {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            margin: 2px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .heatmap-cell:hover {
+            transform: scale(1.2);
+            z-index: 10;
+            position: relative;
+        }
+        .performance-gauge {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+        }
+        .nav-pill {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 25px;
+            padding: 10px 20px;
+            margin: 0 5px;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .nav-pill:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            color: white;
+        }
+        .analytics-tab {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            border: none;
+            color: white;
+            border-radius: 25px;
+            padding: 10px 20px;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        .analytics-tab.active {
+            background: linear-gradient(135deg, #00b894, #00cec9);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .trend-line {
+            height: 4px;
+            border-radius: 2px;
+            margin: 10px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .trend-up { background: linear-gradient(90deg, #00b894, #00cec9); }
+        .trend-down { background: linear-gradient(90deg, #e17055, #d63031); }
+        .trend-stable { background: linear-gradient(90deg, #fdcb6e, #e84393); }
+        .prediction-card {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            margin: 10px 0;
+        }
+        .security-alert {
+            background: linear-gradient(135deg, #fd79a8, #e84393);
+            border-radius: 15px;
+            padding: 15px;
+            color: white;
+            margin: 10px 0;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        .code-quality-ring {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            position: relative;
+            margin: 0 auto;
+            background: conic-gradient(#00b894 0deg 270deg, #e17055 270deg 360deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .code-quality-ring::before {
+            content: '';
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: white;
+            position: absolute;
+        }
+        .quality-score {
+            position: relative;
+            z-index: 2;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <!-- Navigation -->
+        <div class="d-flex justify-content-center mb-4">
+            <a href="/" class="nav-pill"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="/voice-analyzer" class="nav-pill"><i class="fas fa-microphone"></i> Voice</a>
+            <a href="/collaboration" class="nav-pill"><i class="fas fa-users"></i> Collaboration</a>
+            <a href="/ai-assistant" class="nav-pill"><i class="fas fa-robot"></i> AI Assistant</a>
+            <a href="/deployment-hub" class="nav-pill"><i class="fas fa-rocket"></i> Deploy</a>
+        </div>
+
+        <div class="main-card p-4">
+            <h1 class="text-center mb-4">
+                <i class="fas fa-chart-line text-primary"></i>
+                📊 Advanced Analytics Dashboard
+            </h1>
+
+            <!-- Analytics Header -->
+            <div class="analytics-header">
+                <h3><i class="fas fa-magic"></i> Deep Code Intelligence</h3>
+                <p class="mb-0">Advanced analytics with 3D visualizations, predictive insights, and real-time monitoring</p>
+            </div>
+
+            <!-- Analytics Tabs -->
+            <div class="d-flex justify-content-center mb-4">
+                <button class="analytics-tab active" onclick="switchTab('overview')">
+                    <i class="fas fa-tachometer-alt"></i> Overview
+                </button>
+                <button class="analytics-tab" onclick="switchTab('complexity')">
+                    <i class="fas fa-project-diagram"></i> Complexity
+                </button>
+                <button class="analytics-tab" onclick="switchTab('performance')">
+                    <i class="fas fa-rocket"></i> Performance
+                </button>
+                <button class="analytics-tab" onclick="switchTab('security')">
+                    <i class="fas fa-shield-alt"></i> Security
+                </button>
+                <button class="analytics-tab" onclick="switchTab('predictions')">
+                    <i class="fas fa-crystal-ball"></i> Predictions
+                </button>
+            </div>
+
+            <!-- Overview Tab -->
+            <div id="overviewTab" class="tab-content">
+                <!-- Key Metrics -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <i class="fas fa-code fa-2x mb-2"></i>
+                            <div class="metric-value" id="totalLines">12,547</div>
+                            <div>Total Lines</div>
+                            <div class="trend-line trend-up"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <i class="fas fa-file-code fa-2x mb-2"></i>
+                            <div class="metric-value" id="totalFiles">89</div>
+                            <div>Files Analyzed</div>
+                            <div class="trend-line trend-stable"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <i class="fas fa-bug fa-2x mb-2"></i>
+                            <div class="metric-value" id="issuesFound">7</div>
+                            <div>Issues Found</div>
+                            <div class="trend-line trend-down"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <i class="fas fa-star fa-2x mb-2"></i>
+                            <div class="metric-value" id="qualityScore">8.5</div>
+                            <div>Quality Score</div>
+                            <div class="trend-line trend-up"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3D Visualization -->
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="chart-container">
+                            <h5><i class="fas fa-cube text-primary"></i> 3D Code Architecture</h5>
+                            <div id="3dChart" class="chart-3d">
+                                <canvas id="architectureCanvas" width="100%" height="400"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="chart-container">
+                            <h5><i class="fas fa-chart-pie text-success"></i> Code Quality</h5>
+                            <div class="code-quality-ring">
+                                <div class="quality-score">87%</div>
+                            </div>
+                            <div class="mt-3 text-center">
+                                <div class="d-flex justify-content-between">
+                                    <small>Maintainability</small>
+                                    <strong>92%</strong>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <small>Reliability</small>
+                                    <strong>85%</strong>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <small>Security</small>
+                                    <strong>91%</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Complexity Tab -->
+            <div id="complexityTab" class="tab-content" style="display: none;">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="complexity-heatmap">
+                            <h5><i class="fas fa-fire text-danger"></i> Complexity Heatmap</h5>
+                            <p>Hover over cells to see complexity details</p>
+                            <div id="complexityHeatmap">
+                                <!-- Generated dynamically -->
+                            </div>
+                            <div class="mt-3 d-flex justify-content-between">
+                                <span><span style="background: #00b894; width: 15px; height: 15px; display: inline-block; border-radius: 2px;"></span> Low (1-5)</span>
+                                <span><span style="background: #fdcb6e; width: 15px; height: 15px; display: inline-block; border-radius: 2px;"></span> Medium (6-10)</span>
+                                <span><span style="background: #e17055; width: 15px; height: 15px; display: inline-block; border-radius: 2px;"></span> High (11+)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="chart-container">
+                            <h5><i class="fas fa-chart-area text-info"></i> Complexity Trends</h5>
+                            <canvas id="complexityChart" width="100%" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Tab -->
+            <div id="performanceTab" class="tab-content" style="display: none;">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="metric-card">
+                            <i class="fas fa-tachometer-alt fa-2x mb-2"></i>
+                            <div class="performance-gauge">
+                                <canvas id="performanceGauge" width="200" height="200"></canvas>
+                            </div>
+                            <div class="mt-2">Performance Score</div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="chart-container">
+                            <h5><i class="fas fa-bolt text-warning"></i> Performance Metrics</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label>Execution Time</label>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" style="width: 78%">78ms</div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label>Memory Usage</label>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-warning" style="width: 65%">65MB</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label>CPU Usage</label>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-info" style="width: 45%">45%</div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label>I/O Operations</label>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-primary" style="width: 32%">32/s</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Tab -->
+            <div id="securityTab" class="tab-content" style="display: none;">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="chart-container">
+                            <h5><i class="fas fa-shield-alt text-danger"></i> Security Analysis</h5>
+                            <div id="securityAlerts">
+                                <div class="security-alert">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <strong>High Risk:</strong> SQL Injection vulnerability detected in user input handling
+                                </div>
+                                <div class="security-alert" style="background: linear-gradient(135deg, #fdcb6e, #e84393);">
+                                    <i class="fas fa-info-circle"></i>
+                                    <strong>Medium Risk:</strong> Weak password validation in authentication module
+                                </div>
+                                <div class="security-alert" style="background: linear-gradient(135deg, #00b894, #00cec9);">
+                                    <i class="fas fa-check-circle"></i>
+                                    <strong>Low Risk:</strong> Missing HTTPS enforcement in configuration
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="metric-card">
+                            <i class="fas fa-lock fa-2x mb-2"></i>
+                            <div class="metric-value">91%</div>
+                            <div>Security Score</div>
+                        </div>
+                        <div class="chart-container mt-3">
+                            <h6>Vulnerability Types</h6>
+                            <canvas id="securityChart" width="100%" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Predictions Tab -->
+            <div id="predictionsTab" class="tab-content" style="display: none;">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="prediction-card">
+                            <h5><i class="fas fa-crystal-ball"></i> AI-Powered Predictions</h5>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="text-center">
+                                        <i class="fas fa-chart-line fa-3x mb-3"></i>
+                                        <h6>Code Growth Prediction</h6>
+                                        <p>+2,500 lines expected in next 30 days</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-center">
+                                        <i class="fas fa-bug fa-3x mb-3"></i>
+                                        <h6>Bug Likelihood</h6>
+                                        <p>3 potential issues identified</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-center">
+                                        <i class="fas fa-clock fa-3x mb-3"></i>
+                                        <h6>Maintenance Time</h6>
+                                        <p>15 hours estimated for next sprint</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="chart-container">
+                            <h5><i class="fas fa-trending-up text-success"></i> Growth Trends</h5>
+                            <canvas id="growthChart" width="100%" height="300"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="chart-container">
+                            <h5><i class="fas fa-brain text-purple"></i> AI Recommendations</h5>
+                            <div class="list-group">
+                                <div class="list-group-item">
+                                    <i class="fas fa-lightbulb text-warning"></i>
+                                    <strong>Refactor Suggestion:</strong> Consider breaking down large functions in main.py
+                                </div>
+                                <div class="list-group-item">
+                                    <i class="fas fa-shield-alt text-danger"></i>
+                                    <strong>Security Update:</strong> Update dependencies to latest secure versions
+                                </div>
+                                <div class="list-group-item">
+                                    <i class="fas fa-rocket text-success"></i>
+                                    <strong>Performance Tip:</strong> Implement caching for frequently accessed data
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Real-time Updates -->
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="chart-container">
+                        <h5><i class="fas fa-broadcast-tower text-info"></i> Real-time Monitoring</h5>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="badge bg-success me-2">
+                                    <i class="fas fa-circle"></i> Live Updates
+                                </span>
+                                <small>Last updated: <span id="lastUpdate">Just now</span></small>
+                            </div>
+                            <button class="btn btn-primary" onclick="refreshAnalytics()">
+                                <i class="fas fa-sync-alt"></i> Refresh Analytics
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+        let activeTab = 'overview';
+        let charts = {};
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.analytics-tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').style.display = 'block';
+            event.target.classList.add('active');
+            
+            activeTab = tabName;
+            
+            // Initialize tab-specific content
+            switch(tabName) {
+                case 'complexity':
+                    initializeComplexityHeatmap();
+                    break;
+                case 'performance':
+                    initializePerformanceGauge();
+                    break;
+                case 'security':
+                    initializeSecurityChart();
+                    break;
+                case 'predictions':
+                    initializeGrowthChart();
+                    break;
+            }
+        }
+
+        function initialize3DChart() {
+            const canvas = document.getElementById('architectureCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas size
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = 400;
+            
+            // Simple 3D-like visualization
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw 3D blocks representing code modules
+            const modules = [
+                { x: 50, y: 100, width: 60, height: 80, depth: 30, color: '#667eea', name: 'Core' },
+                { x: 150, y: 80, width: 80, height: 100, depth: 40, color: '#764ba2', name: 'API' },
+                { x: 280, y: 120, width: 50, height: 60, depth: 25, color: '#f093fb', name: 'Utils' },
+                { x: 380, y: 90, width: 70, height: 90, depth: 35, color: '#f5576c', name: 'UI' },
+                { x: 200, y: 200, width: 90, height: 70, depth: 45, color: '#4ecdc4', name: 'Data' }
+            ];
+            
+            modules.forEach(module => {
+                draw3DBlock(ctx, module);
+            });
+            
+            // Add connections between modules
+            drawConnections(ctx, modules);
+        }
+
+        function draw3DBlock(ctx, module) {
+            const { x, y, width, height, depth, color, name } = module;
+            
+            // Draw 3D block
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, width, height);
+            
+            // Draw depth (right side)
+            ctx.fillStyle = shadeColor(color, -20);
+            ctx.beginPath();
+            ctx.moveTo(x + width, y);
+            ctx.lineTo(x + width + depth, y - depth);
+            ctx.lineTo(x + width + depth, y + height - depth);
+            ctx.lineTo(x + width, y + height);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Draw depth (top)
+            ctx.fillStyle = shadeColor(color, -10);
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + depth, y - depth);
+            ctx.lineTo(x + width + depth, y - depth);
+            ctx.lineTo(x + width, y);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Add text label
+            ctx.fillStyle = 'white';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(name, x + width/2, y + height/2);
+        }
+
+        function shadeColor(color, percent) {
+            const num = parseInt(color.replace("#",""), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = (num >> 16) + amt;
+            const G = (num >> 8 & 0x00FF) + amt;
+            const B = (num & 0x0000FF) + amt;
+            return "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 +
+                (G<255?G<1?0:G:255)*0x100 + (B<255?B<1?0:B:255))
+                .toString(16).slice(1);
+        }
+
+        function drawConnections(ctx, modules) {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 2;
+            
+            // Draw some connections between modules
+            const connections = [
+                [0, 1], [1, 2], [1, 4], [3, 4]
+            ];
+            
+            connections.forEach(([from, to]) => {
+                const fromModule = modules[from];
+                const toModule = modules[to];
+                
+                ctx.beginPath();
+                ctx.moveTo(
+                    fromModule.x + fromModule.width/2, 
+                    fromModule.y + fromModule.height/2
+                );
+                ctx.lineTo(
+                    toModule.x + toModule.width/2, 
+                    toModule.y + toModule.height/2
+                );
+                ctx.stroke();
+            });
+        }
+
+        function initializeComplexityHeatmap() {
+            const heatmapDiv = document.getElementById('complexityHeatmap');
+            heatmapDiv.innerHTML = '';
+            
+            // Generate heatmap cells
+            for (let i = 0; i < 200; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'heatmap-cell';
+                
+                const complexity = Math.random() * 15;
+                let color;
+                if (complexity < 5) color = '#00b894';
+                else if (complexity < 10) color = '#fdcb6e';
+                else color = '#e17055';
+                
+                cell.style.backgroundColor = color;
+                cell.title = `Complexity: ${complexity.toFixed(1)}`;
+                
+                heatmapDiv.appendChild(cell);
+            }
+        }
+
+        function initializePerformanceGauge() {
+            const canvas = document.getElementById('performanceGauge');
+            const ctx = canvas.getContext('2d');
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 80;
+            const score = 78; // Performance score
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw gauge background
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.strokeStyle = '#e9ecef';
+            ctx.lineWidth = 10;
+            ctx.stroke();
+            
+            // Draw gauge progress
+            const angle = (score / 100) * 2 * Math.PI;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, -Math.PI/2, -Math.PI/2 + angle);
+            ctx.strokeStyle = score > 70 ? '#00b894' : score > 40 ? '#fdcb6e' : '#e17055';
+            ctx.lineWidth = 10;
+            ctx.stroke();
+            
+            // Draw score text
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(score + '%', centerX, centerY + 8);
+        }
+
+        function initializeSecurityChart() {
+            const ctx = document.getElementById('securityChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['High Risk', 'Medium Risk', 'Low Risk', 'Secure'],
+                    datasets: [{
+                        data: [1, 2, 4, 12],
+                        backgroundColor: ['#e17055', '#fdcb6e', '#74b9ff', '#00b894'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    }
+                }
+            });
+        }
+
+        function initializeGrowthChart() {
+            const ctx = document.getElementById('growthChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Lines of Code',
+                        data: [8000, 8500, 9200, 10500, 11800, 12547],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        }
+
+        async function refreshAnalytics() {
+            document.getElementById('lastUpdate').textContent = 'Refreshing...';
+            
+            try {
+                const response = await fetch('/api/analytics/complexity', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.summary) {
+                    document.getElementById('totalFiles').textContent = data.summary.total_files;
+                    document.getElementById('qualityScore').textContent = 
+                        (10 - data.summary.avg_complexity / 10).toFixed(1);
+                    document.getElementById('issuesFound').textContent = data.summary.high_risk_files;
+                }
+                
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+            } catch (error) {
+                console.error('Failed to refresh analytics:', error);
+                document.getElementById('lastUpdate').textContent = 'Failed to update';
+            }
+        }
+
+        function updateMetrics() {
+            // Simulate real-time metric updates
+            const totalLines = document.getElementById('totalLines');
+            const currentValue = parseInt(totalLines.textContent.replace(',', ''));
+            const newValue = currentValue + Math.floor(Math.random() * 10) - 5;
+            totalLines.textContent = newValue.toLocaleString();
+        }
+
+        // Initialize everything when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initialize3DChart();
+            
+            // Update last update time
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+            
+            // Simulate real-time updates
+            setInterval(() => {
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+                updateMetrics();
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

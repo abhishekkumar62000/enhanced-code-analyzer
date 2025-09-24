@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎙️ Voice Code Analyzer - Enhanced Code Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+        .main-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .voice-controls {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            border-radius: 15px;
+            padding: 30px;
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .voice-button {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(45deg, #ff9a56, #ff6b6b);
+            color: white;
+            font-size: 2rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        .voice-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+        }
+        .voice-button.recording {
+            animation: pulse 1.5s infinite;
+            background: linear-gradient(45deg, #ff4757, #c44569);
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .transcript-area {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            min-height: 150px;
+        }
+        .analysis-result {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            margin-top: 20px;
+        }
+        .feature-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 10px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .nav-pill {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 25px;
+            padding: 10px 20px;
+            margin: 0 5px;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .nav-pill:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            color: white;
+        }
+        .voice-commands {
+            background: linear-gradient(135deg, #a8edea, #fed6e3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .command-item {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            padding: 10px;
+            margin: 5px 0;
+            border-left: 4px solid #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <!-- Navigation -->
+        <div class="d-flex justify-content-center mb-4">
+            <a href="/" class="nav-pill"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="/collaboration" class="nav-pill"><i class="fas fa-users"></i> Collaboration</a>
+            <a href="/ai-assistant" class="nav-pill"><i class="fas fa-robot"></i> AI Assistant</a>
+            <a href="/advanced-analytics" class="nav-pill"><i class="fas fa-chart-line"></i> Analytics</a>
+            <a href="/deployment-hub" class="nav-pill"><i class="fas fa-rocket"></i> Deploy</a>
+        </div>
+
+        <div class="main-card p-4">
+            <h1 class="text-center mb-4">
+                <i class="fas fa-microphone text-primary"></i>
+                🎙️ Voice Code Analyzer
+            </h1>
+
+            <!-- Voice Controls -->
+            <div class="voice-controls">
+                <h3><i class="fas fa-magic"></i> Speak Your Code Questions</h3>
+                <p class="mb-4">Click the microphone and ask questions about your code in natural language</p>
+                
+                <button id="voiceButton" class="voice-button" onclick="toggleVoiceRecognition()">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                
+                <div class="mt-3">
+                    <span id="voiceStatus" class="badge bg-light text-dark">Ready to listen</span>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Transcript Area -->
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h4><i class="fas fa-comment-alt text-info"></i> Voice Transcript</h4>
+                        <div id="transcript" class="transcript-area">
+                            <p class="mb-0">Your voice input will appear here...</p>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <button class="btn btn-outline-primary me-2" onclick="clearTranscript()">
+                                <i class="fas fa-trash"></i> Clear
+                            </button>
+                            <button class="btn btn-success" onclick="analyzeVoiceInput()">
+                                <i class="fas fa-brain"></i> Analyze Code
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analysis Results -->
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h4><i class="fas fa-cogs text-success"></i> AI Analysis Results</h4>
+                        <div id="analysisResult" class="analysis-result">
+                            <p class="mb-0">Analysis results will appear here after voice input...</p>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <span class="badge bg-info">Voice-Powered</span>
+                            <span class="badge bg-success">AI-Enhanced</span>
+                            <span class="badge bg-warning">Real-time</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Voice Commands Help -->
+            <div class="voice-commands">
+                <h4><i class="fas fa-lightbulb text-warning"></i> Voice Command Examples</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="command-item">
+                            <strong>"Analyze my Python code for security issues"</strong>
+                        </div>
+                        <div class="command-item">
+                            <strong>"What APIs are used in this project?"</strong>
+                        </div>
+                        <div class="command-item">
+                            <strong>"Find all functions in JavaScript files"</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="command-item">
+                            <strong>"Check code complexity and performance"</strong>
+                        </div>
+                        <div class="command-item">
+                            <strong>"Generate documentation for this code"</strong>
+                        </div>
+                        <div class="command-item">
+                            <strong>"Suggest improvements for my code"</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Voice Settings -->
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="feature-card text-center">
+                        <h5><i class="fas fa-volume-up text-primary"></i> Voice Settings</h5>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="voiceResponse" checked>
+                            <label class="form-check-label" for="voiceResponse">
+                                Voice Response
+                            </label>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="continuousListening">
+                            <label class="form-check-label" for="continuousListening">
+                                Continuous Mode
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card text-center">
+                        <h5><i class="fas fa-language text-info"></i> Language</h5>
+                        <select class="form-select" id="voiceLanguage">
+                            <option value="en-US">English (US)</option>
+                            <option value="en-GB">English (UK)</option>
+                            <option value="es-ES">Spanish</option>
+                            <option value="fr-FR">French</option>
+                            <option value="de-DE">German</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card text-center">
+                        <h5><i class="fas fa-tachometer-alt text-success"></i> Status</h5>
+                        <div class="d-flex justify-content-between">
+                            <span>Recognition:</span>
+                            <span id="recognitionSupport" class="badge bg-success">Supported</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Microphone:</span>
+                            <span id="microphoneStatus" class="badge bg-success">Ready</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let recognition = null;
+        let isListening = false;
+        let transcript = '';
+
+        // Initialize Speech Recognition
+        function initializeSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.continuous = false;
+                recognition.interimResults = true;
+                recognition.lang = document.getElementById('voiceLanguage').value;
+                
+                recognition.onstart = function() {
+                    isListening = true;
+                    updateVoiceButton();
+                    document.getElementById('voiceStatus').textContent = 'Listening...';
+                    document.getElementById('voiceStatus').className = 'badge bg-danger';
+                };
+                
+                recognition.onresult = function(event) {
+                    let interimTranscript = '';
+                    let finalTranscript = '';
+                    
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        if (event.results[i].isFinal) {
+                            finalTranscript += event.results[i][0].transcript;
+                        } else {
+                            interimTranscript += event.results[i][0].transcript;
+                        }
+                    }
+                    
+                    transcript = finalTranscript || interimTranscript;
+                    document.getElementById('transcript').innerHTML = `<p class="mb-0">${transcript}</p>`;
+                    
+                    if (finalTranscript) {
+                        analyzeVoiceInput();
+                    }
+                };
+                
+                recognition.onend = function() {
+                    isListening = false;
+                    updateVoiceButton();
+                    document.getElementById('voiceStatus').textContent = 'Ready to listen';
+                    document.getElementById('voiceStatus').className = 'badge bg-light text-dark';
+                };
+                
+                recognition.onerror = function(event) {
+                    console.error('Speech recognition error:', event.error);
+                    document.getElementById('voiceStatus').textContent = 'Error: ' + event.error;
+                    document.getElementById('voiceStatus').className = 'badge bg-warning';
+                    isListening = false;
+                    updateVoiceButton();
+                };
+                
+                document.getElementById('recognitionSupport').textContent = 'Supported';
+                document.getElementById('recognitionSupport').className = 'badge bg-success';
+            } else {
+                document.getElementById('recognitionSupport').textContent = 'Not Supported';
+                document.getElementById('recognitionSupport').className = 'badge bg-danger';
+                document.getElementById('voiceButton').disabled = true;
+            }
+        }
+
+        function toggleVoiceRecognition() {
+            if (!recognition) {
+                alert('Speech recognition is not supported in your browser.');
+                return;
+            }
+            
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.lang = document.getElementById('voiceLanguage').value;
+                recognition.start();
+            }
+        }
+
+        function updateVoiceButton() {
+            const button = document.getElementById('voiceButton');
+            const icon = button.querySelector('i');
+            
+            if (isListening) {
+                button.classList.add('recording');
+                icon.className = 'fas fa-stop';
+            } else {
+                button.classList.remove('recording');
+                icon.className = 'fas fa-microphone';
+            }
+        }
+
+        async function analyzeVoiceInput() {
+            if (!transcript.trim()) {
+                alert('Please speak something first!');
+                return;
+            }
+            
+            document.getElementById('analysisResult').innerHTML = '<p class="mb-0"><i class="fas fa-spinner fa-spin"></i> Processing your voice input...</p>';
+            
+            try {
+                const response = await fetch('/api/voice/process', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: transcript
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    document.getElementById('analysisResult').innerHTML = `<p class="mb-0 text-warning"><i class="fas fa-exclamation-triangle"></i> Error: ${data.error}</p>`;
+                } else {
+                    document.getElementById('analysisResult').innerHTML = `<p class="mb-0">${data.response}</p>`;
+                    
+                    // Optional: Speak the response
+                    if (document.getElementById('voiceResponse').checked && 'speechSynthesis' in window) {
+                        const utterance = new SpeechSynthesisUtterance(data.response);
+                        utterance.lang = document.getElementById('voiceLanguage').value;
+                        speechSynthesis.speak(utterance);
+                    }
+                }
+            } catch (error) {
+                console.error('Error processing voice input:', error);
+                document.getElementById('analysisResult').innerHTML = '<p class="mb-0 text-danger"><i class="fas fa-times"></i> Failed to process voice input. Please try again.</p>';
+            }
+        }
+
+        function clearTranscript() {
+            transcript = '';
+            document.getElementById('transcript').innerHTML = '<p class="mb-0">Your voice input will appear here...</p>';
+            document.getElementById('analysisResult').innerHTML = '<p class="mb-0">Analysis results will appear here after voice input...</p>';
+        }
+
+        // Check microphone permissions
+        async function checkMicrophonePermissions() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                stream.getTracks().forEach(track => track.stop());
+                document.getElementById('microphoneStatus').textContent = 'Ready';
+                document.getElementById('microphoneStatus').className = 'badge bg-success';
+            } catch (error) {
+                document.getElementById('microphoneStatus').textContent = 'Permission Required';
+                document.getElementById('microphoneStatus').className = 'badge bg-warning';
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSpeechRecognition();
+            checkMicrophonePermissions();
+            
+            // Update language when changed
+            document.getElementById('voiceLanguage').addEventListener('change', function() {
+                if (recognition) {
+                    recognition.lang = this.value;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

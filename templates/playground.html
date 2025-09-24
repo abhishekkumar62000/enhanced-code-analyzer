@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Code Playground</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs/editor/editor.main.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .playground-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        #editor {
+            height: 400px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        #output {
+            height: 200px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Courier New', monospace;
+            padding: 15px;
+            border-radius: 10px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .template-btn {
+            margin: 5px;
+            border-radius: 20px;
+        }
+        
+        .ai-suggestion {
+            background: rgba(111, 66, 193, 0.2);
+            border: 1px solid rgba(111, 66, 193, 0.5);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .suggestion-btn {
+            background: rgba(111, 66, 193, 0.3);
+            border: 1px solid rgba(111, 66, 193, 0.5);
+            color: white;
+            border-radius: 20px;
+            padding: 5px 15px;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .suggestion-btn:hover {
+            background: rgba(111, 66, 193, 0.5);
+            color: white;
+        }
+        
+        .output-success {
+            color: #28a745;
+        }
+        
+        .output-error {
+            color: #dc3545;
+        }
+        
+        .output-info {
+            color: #17a2b8;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-arrow-left"></i> Back to Analysis
+            </a>
+            <span class="navbar-text">
+                <i class="fas fa-code"></i> Interactive Code Playground
+            </span>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Code Editor Section -->
+            <div class="col-md-8">
+                <div class="playground-card p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4><i class="fas fa-edit"></i> Code Editor</h4>
+                        <div>
+                            <select class="form-select form-select-sm d-inline" id="languageSelect" style="width: auto;">
+                                <option value="python">Python</option>
+                                <option value="javascript">JavaScript</option>
+                                <option value="java">Java</option>
+                                <option value="cpp">C++</option>
+                            </select>
+                            <button class="btn btn-success btn-sm ms-2" onclick="runCode()">
+                                <i class="fas fa-play"></i> Run Code
+                            </button>
+                            <button class="btn btn-warning btn-sm ms-1" onclick="getAISuggestions()">
+                                <i class="fas fa-robot"></i> Get AI Help
+                            </button>
+                            <button class="btn btn-secondary btn-sm ms-1" onclick="clearEditor()">
+                                <i class="fas fa-trash"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Code Templates -->
+                    <div class="mb-3">
+                        <small class="text-muted">Quick Templates:</small><br>
+                        <button class="btn btn-outline-primary template-btn btn-sm" onclick="loadTemplate('hello_world')">
+                            Hello World
+                        </button>
+                        <button class="btn btn-outline-primary template-btn btn-sm" onclick="loadTemplate('fibonacci')">
+                            Fibonacci
+                        </button>
+                        <button class="btn btn-outline-primary template-btn btn-sm" onclick="loadTemplate('sorting')">
+                            Sorting Algorithm
+                        </button>
+                        <button class="btn btn-outline-primary template-btn btn-sm" onclick="loadTemplate('api_call')">
+                            API Call
+                        </button>
+                        <button class="btn btn-outline-primary template-btn btn-sm" onclick="loadTemplate('data_analysis')">
+                            Data Analysis
+                        </button>
+                    </div>
+                    
+                    <div id="editor"></div>
+                </div>
+
+                <!-- Output Section -->
+                <div class="playground-card p-4">
+                    <h4><i class="fas fa-terminal"></i> Output</h4>
+                    <div id="output">
+                        <div class="output-info">Welcome to the Interactive Code Playground! 🚀</div>
+                        <div class="output-info">• Write your code in the editor above</div>
+                        <div class="output-info">• Click "Run Code" to execute (Python supported)</div>
+                        <div class="output-info">• Use "Get AI Help" for suggestions and improvements</div>
+                        <div class="output-info">• Try the quick templates to get started</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Assistant & Features -->
+            <div class="col-md-4">
+                <!-- AI Suggestions -->
+                <div class="playground-card p-4 mb-4">
+                    <h5><i class="fas fa-robot"></i> AI Assistant</h5>
+                    <div id="aiSuggestions">
+                        <p class="text-muted">Write some code and click "Get AI Help" to receive intelligent suggestions!</p>
+                    </div>
+                </div>
+
+                <!-- Code Analysis -->
+                <div class="playground-card p-4 mb-4">
+                    <h5><i class="fas fa-chart-line"></i> Code Analysis</h5>
+                    <div id="codeAnalysis">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="mb-2">
+                                    <div class="h4 text-primary" id="lineCount">0</div>
+                                    <small>Lines</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mb-2">
+                                    <div class="h4 text-success" id="charCount">0</div>
+                                    <small>Characters</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="mb-2">
+                                    <div class="h4 text-warning" id="complexity">Low</div>
+                                    <small>Complexity</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mb-2">
+                                    <div class="h4 text-info" id="functionCount">0</div>
+                                    <small>Functions</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Code Snippets Library -->
+                <div class="playground-card p-4">
+                    <h5><i class="fas fa-book"></i> Code Snippets</h5>
+                    <div class="accordion" id="snippetsAccordion">
+                        <div class="accordion-item bg-transparent">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button bg-transparent text-white" type="button" data-bs-toggle="collapse" data-bs-target="#algorithms">
+                                    Algorithms
+                                </button>
+                            </h2>
+                            <div id="algorithms" class="accordion-collapse collapse show">
+                                <div class="accordion-body">
+                                    <button class="btn btn-sm suggestion-btn" onclick="insertSnippet('binary_search')">Binary Search</button>
+                                    <button class="btn btn-sm suggestion-btn" onclick="insertSnippet('bubble_sort')">Bubble Sort</button>
+                                    <button class="btn btn-sm suggestion-btn" onclick="insertSnippet('dfs')">DFS</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item bg-transparent">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button bg-transparent text-white collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#utilities">
+                                    Utilities
+                                </button>
+                            </h2>
+                            <div id="utilities" class="accordion-collapse collapse">
+                                <div class="accordion-body">
+                                    <button class="btn btn-sm suggestion-btn" onclick="insertSnippet('file_reader')">File Reader</button>
+                                    <button class="btn btn-sm suggestion-btn" onclick="insertSnippet('json_parser')">JSON Parser</button>
+                                    <button class="btn btn-sm suggestion-btn" onclick="insertSnippet('web_scraper')">Web Scraper</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs/loader.min.js"></script>
+    
+    <script>
+        let editor;
+        let currentLanguage = 'python';
+
+        // Initialize Monaco Editor
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs' }});
+        require(['vs/editor/editor.main'], function() {
+            editor = monaco.editor.create(document.getElementById('editor'), {
+                value: '# Welcome to the Code Playground!\n# Write your Python code here and click "Run Code"\n\nprint("Hello, World!")\nprint("Ready to code? Let\'s go! 🚀")',
+                language: 'python',
+                theme: 'vs-dark',
+                fontSize: 14,
+                minimap: { enabled: false },
+                automaticLayout: true
+            });
+
+            // Update analysis on content change
+            editor.onDidChangeModelContent(() => {
+                updateCodeAnalysis();
+            });
+        });
+
+        // Templates
+        const templates = {
+            hello_world: {
+                python: '# Hello World Example\nprint("Hello, World!")\nprint("Welcome to Python programming!")',
+                javascript: '// Hello World Example\nconsole.log("Hello, World!");\nconsole.log("Welcome to JavaScript!");',
+                java: '// Hello World Example\npublic class HelloWorld {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");\n    }\n}',
+                cpp: '#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello, World!" << endl;\n    return 0;\n}'
+            },
+            fibonacci: {
+                python: '# Fibonacci Sequence\ndef fibonacci(n):\n    if n <= 1:\n        return n\n    return fibonacci(n-1) + fibonacci(n-2)\n\n# Test\nfor i in range(10):\n    print(f"F({i}) = {fibonacci(i)}")',
+                javascript: '// Fibonacci Sequence\nfunction fibonacci(n) {\n    if (n <= 1) return n;\n    return fibonacci(n-1) + fibonacci(n-2);\n}\n\n// Test\nfor (let i = 0; i < 10; i++) {\n    console.log(`F(${i}) = ${fibonacci(i)}`);\n}'
+            },
+            sorting: {
+                python: '# Bubble Sort Algorithm\ndef bubble_sort(arr):\n    n = len(arr)\n    for i in range(n):\n        for j in range(0, n-i-1):\n            if arr[j] > arr[j+1]:\n                arr[j], arr[j+1] = arr[j+1], arr[j]\n    return arr\n\n# Test\nnumbers = [64, 34, 25, 12, 22, 11, 90]\nprint("Original:", numbers)\nprint("Sorted:", bubble_sort(numbers.copy()))'
+            },
+            api_call: {
+                python: '# API Call Example\nimport json\n\n# Simulated API response\ndef mock_api_call():\n    return {\n        "status": "success",\n        "data": {\n            "users": [{"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}]\n        }\n    }\n\n# Make API call\nresponse = mock_api_call()\nprint("API Response:")\nprint(json.dumps(response, indent=2))'
+            },
+            data_analysis: {
+                python: '# Data Analysis Example\nimport statistics\n\n# Sample data\ndata = [23, 45, 56, 78, 32, 67, 89, 12, 34, 56]\n\nprint("Data Analysis Results:")\nprint(f"Mean: {statistics.mean(data):.2f}")\nprint(f"Median: {statistics.median(data)}")\nprint(f"Mode: {statistics.mode(data)}")\nprint(f"Standard Deviation: {statistics.stdev(data):.2f}")\nprint(f"Min: {min(data)}, Max: {max(data)}")'
+            }
+        };
+
+        // Code snippets
+        const snippets = {
+            binary_search: `def binary_search(arr, target):
+    left, right = 0, len(arr) - 1
+    while left <= right:
+        mid = (left + right) // 2
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+    return -1`,
+            
+            bubble_sort: `def bubble_sort(arr):
+    n = len(arr)
+    for i in range(n):
+        for j in range(0, n-i-1):
+            if arr[j] > arr[j+1]:
+                arr[j], arr[j+1] = arr[j+1], arr[j]
+    return arr`,
+            
+            file_reader: `def read_file(filename):
+    try:
+        with open(filename, 'r') as file:
+            content = file.read()
+        return content
+    except FileNotFoundError:
+        return "File not found"`,
+        
+            json_parser: `import json
+
+def parse_json(json_string):
+    try:
+        data = json.loads(json_string)
+        return data
+    except json.JSONDecodeError:
+        return "Invalid JSON format"`
+        };
+
+        function loadTemplate(templateName) {
+            const template = templates[templateName];
+            if (template && template[currentLanguage]) {
+                editor.setValue(template[currentLanguage]);
+            } else if (template && template.python) {
+                editor.setValue(template.python);
+            }
+        }
+
+        function insertSnippet(snippetName) {
+            const snippet = snippets[snippetName];
+            if (snippet) {
+                const position = editor.getPosition();
+                editor.executeEdits('', [{
+                    range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+                    text: '\n' + snippet + '\n'
+                }]);
+            }
+        }
+
+        function runCode() {
+            const code = editor.getValue();
+            const language = document.getElementById('languageSelect').value;
+            
+            if (language !== 'python') {
+                addToOutput('⚠️ Code execution currently only supported for Python', 'warning');
+                return;
+            }
+
+            addToOutput('🚀 Running code...', 'info');
+
+            fetch('/api/execute-code', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    code: code,
+                    language: language
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.result) {
+                    addToOutput('✅ Output:', 'success');
+                    addToOutput(data.result, 'output');
+                } else {
+                    addToOutput('❌ No output received', 'error');
+                }
+            })
+            .catch(error => {
+                addToOutput(`❌ Error: ${error.message}`, 'error');
+            });
+        }
+
+        function addToOutput(text, type = 'output') {
+            const output = document.getElementById('output');
+            const div = document.createElement('div');
+            div.className = `output-${type}`;
+            div.textContent = text;
+            output.appendChild(div);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function clearEditor() {
+            editor.setValue('');
+        }
+
+        function getAISuggestions() {
+            const code = editor.getValue();
+            if (!code.trim()) {
+                document.getElementById('aiSuggestions').innerHTML = '<p class="text-warning">Please write some code first!</p>';
+                return;
+            }
+
+            document.getElementById('aiSuggestions').innerHTML = '<p class="text-info"><i class="fas fa-spinner fa-spin"></i> Getting AI suggestions...</p>';
+
+            // Simulate AI suggestions (in real implementation, this would call your AI API)
+            setTimeout(() => {
+                const suggestions = generateAISuggestions(code);
+                displayAISuggestions(suggestions);
+            }, 2000);
+        }
+
+        function generateAISuggestions(code) {
+            const suggestions = [];
+            
+            // Basic code analysis
+            if (code.includes('print(') && !code.includes('def ')) {
+                suggestions.push({
+                    type: 'improvement',
+                    title: 'Extract to Function',
+                    description: 'Consider wrapping your code in a function for better reusability',
+                    action: 'wrap_in_function'
+                });
+            }
+
+            if (!code.includes('try:') && (code.includes('open(') || code.includes('int('))) {
+                suggestions.push({
+                    type: 'security',
+                    title: 'Add Error Handling',
+                    description: 'Add try-except blocks to handle potential errors',
+                    action: 'add_error_handling'
+                });
+            }
+
+            if (code.split('\n').length > 20 && !code.includes('"""')) {
+                suggestions.push({
+                    type: 'documentation',
+                    title: 'Add Documentation',
+                    description: 'Consider adding docstrings to document your code',
+                    action: 'add_docs'
+                });
+            }
+
+            // Performance suggestions
+            if (code.includes('for ') && code.includes('for ') && code.includes('if ')) {
+                suggestions.push({
+                    type: 'performance',
+                    title: 'Optimize Nested Loops',
+                    description: 'Consider using list comprehensions or optimizing the algorithm',
+                    action: 'optimize_loops'
+                });
+            }
+
+            return suggestions;
+        }
+
+        function displayAISuggestions(suggestions) {
+            const container = document.getElementById('aiSuggestions');
+            
+            if (suggestions.length === 0) {
+                container.innerHTML = '<p class="text-success">✅ Your code looks good! No suggestions at this time.</p>';
+                return;
+            }
+
+            let html = '<h6>💡 AI Suggestions:</h6>';
+            suggestions.forEach(suggestion => {
+                const iconMap = {
+                    improvement: 'fas fa-arrow-up',
+                    security: 'fas fa-shield-alt',
+                    documentation: 'fas fa-book',
+                    performance: 'fas fa-tachometer-alt'
+                };
+                
+                html += `
+                    <div class="ai-suggestion">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong><i class="${iconMap[suggestion.type]}"></i> ${suggestion.title}</strong>
+                                <p class="mb-2 small">${suggestion.description}</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm suggestion-btn" onclick="applySuggestion('${suggestion.action}')">
+                            Apply
+                        </button>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function applySuggestion(action) {
+            const code = editor.getValue();
+            let newCode = code;
+
+            switch(action) {
+                case 'wrap_in_function':
+                    newCode = `def main():\n${code.split('\n').map(line => '    ' + line).join('\n')}\n\nif __name__ == "__main__":\n    main()`;
+                    break;
+                case 'add_error_handling':
+                    newCode = `try:\n${code.split('\n').map(line => '    ' + line).join('\n')}\nexcept Exception as e:\n    print(f"Error: {e}")`;
+                    break;
+                case 'add_docs':
+                    newCode = `"""\nCode description goes here.\n"""\n\n${code}`;
+                    break;
+            }
+
+            editor.setValue(newCode);
+        }
+
+        function updateCodeAnalysis() {
+            const code = editor.getValue();
+            const lines = code.split('\n').length;
+            const chars = code.length;
+            const functions = (code.match(/def\s+\w+/g) || []).length;
+            
+            // Simple complexity calculation
+            const complexity = calculateComplexity(code);
+
+            document.getElementById('lineCount').textContent = lines;
+            document.getElementById('charCount').textContent = chars;
+            document.getElementById('functionCount').textContent = functions;
+            document.getElementById('complexity').textContent = complexity;
+        }
+
+        function calculateComplexity(code) {
+            const complexityKeywords = ['if', 'elif', 'else', 'for', 'while', 'try', 'except'];
+            let complexity = 0;
+            
+            complexityKeywords.forEach(keyword => {
+                const matches = code.match(new RegExp(`\\b${keyword}\\b`, 'g'));
+                if (matches) complexity += matches.length;
+            });
+
+            if (complexity < 5) return 'Low';
+            if (complexity < 15) return 'Medium';
+            return 'High';
+        }
+
+        // Language change handler
+        document.getElementById('languageSelect').addEventListener('change', function() {
+            currentLanguage = this.value;
+            monaco.editor.setModelLanguage(editor.getModel(), currentLanguage);
+        });
+    </script>
+</body>
+</html>

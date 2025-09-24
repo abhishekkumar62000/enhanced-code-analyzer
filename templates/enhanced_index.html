@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Source Code Analysis AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6f42c1;
+            --secondary-color: #e83e8c;
+            --dark-bg: #1a1a2e;
+            --darker-bg: #16213e;
+            --accent-color: #0f3460;
+        }
+        
+        .dark-theme {
+            background: linear-gradient(135deg, var(--dark-bg) 0%, var(--darker-bg) 50%, var(--accent-color) 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        
+        .light-theme {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .feature-nav {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .feature-btn {
+            margin: 5px;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .chat-container {
+            height: 70vh;
+            overflow-y: auto;
+            border-radius: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+        }
+        
+        .message {
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 15px;
+            max-width: 80%;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .user-message {
+            background: var(--primary-color);
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+        
+        .ai-message {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .repo-input {
+            border-radius: 50px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 15px 25px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .repo-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .repo-input:focus {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            box-shadow: 0 0 20px rgba(111, 66, 193, 0.5);
+        }
+        
+        .loading {
+            display: none;
+        }
+        
+        .typing-indicator {
+            display: none;
+        }
+        
+        .typing-indicator span {
+            display: inline-block;
+            background: var(--primary-color);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+        
+        .language-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            margin: 2px;
+            background: var(--secondary-color);
+            color: white;
+        }
+        
+        .stats-card {
+            text-align: center;
+            padding: 20px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            margin: 10px 0;
+        }
+        
+        .stats-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+    </style>
+</head>
+<body class="dark-theme" id="mainBody">
+    
+    <!-- Feature Navigation -->
+    <div class="feature-nav">
+        <button class="btn btn-outline-light feature-btn" onclick="toggleTheme()" title="Toggle Theme">
+            <i class="fas fa-adjust"></i>
+        </button>
+        <a href="/dashboard" class="btn btn-primary feature-btn" title="Dashboard">
+            <i class="fas fa-chart-pie"></i>
+        </a>
+        <a href="/playground" class="btn btn-success feature-btn" title="Code Playground">
+            <i class="fas fa-code"></i>
+        </a>
+        <a href="/api-explorer" class="btn btn-info feature-btn" title="API Explorer">
+            <i class="fas fa-network-wired"></i>
+        </a>
+        <button class="btn btn-warning feature-btn" onclick="startVoiceCommand()" title="Voice Command">
+            <i class="fas fa-microphone"></i>
+        </button>
+    </div>
+
+    <div class="container-fluid py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                
+                <!-- Header -->
+                <div class="text-center mb-5">
+                    <h1 class="display-4 fw-bold mb-3">
+                        <i class="fas fa-brain text-primary"></i>
+                        Enhanced Source Code Analysis AI
+                    </h1>
+                    <p class="lead">🚀 Multi-language support • 🔒 Security analysis • 🎮 Interactive playground • 📊 Smart documentation</p>
+                    
+                    <!-- 💰 COST OPTIMIZATION INDICATOR -->
+                    <div class="alert alert-success d-inline-block mt-3" style="border-radius: 50px;">
+                        <i class="fas fa-piggy-bank"></i> <strong>COST OPTIMIZED</strong> - Smart caching & reduced tokens
+                        <span id="costStats" class="ms-2">
+                            <small>API Calls: <span id="apiCalls">0</span> | Tokens: <span id="tokensUsed">0</span> | Cost: $<span id="estimatedCost">0.00</span></small>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- 🚀 ADVANCED FEATURES NAVIGATION -->
+                <div class="text-center mb-5">
+                    <h3 class="mb-4"><i class="fas fa-rocket text-warning"></i> ✨ Advanced Features</h3>
+                    <div class="row justify-content-center">
+                        <div class="col-lg-10">
+                            <div class="d-flex flex-wrap justify-content-center gap-3">
+                                <a href="/voice-analyzer" class="btn btn-primary btn-lg feature-btn glass-card" style="min-width: 180px;">
+                                    <i class="fas fa-microphone"></i><br>
+                                    <strong>🎙️ Voice Analyzer</strong><br>
+                                    <small>Speak your questions</small>
+                                </a>
+                                <a href="/collaboration" class="btn btn-success btn-lg feature-btn glass-card" style="min-width: 180px;">
+                                    <i class="fas fa-users"></i><br>
+                                    <strong>👥 Collaboration</strong><br>
+                                    <small>Real-time team coding</small>
+                                </a>
+                                <a href="/ai-assistant" class="btn btn-info btn-lg feature-btn glass-card" style="min-width: 180px;">
+                                    <i class="fas fa-robot"></i><br>
+                                    <strong>🤖 AI Assistant</strong><br>
+                                    <small>Smart code suggestions</small>
+                                </a>
+                                <a href="/advanced-analytics" class="btn btn-warning btn-lg feature-btn glass-card" style="min-width: 180px;">
+                                    <i class="fas fa-chart-line"></i><br>
+                                    <strong>📊 Analytics</strong><br>
+                                    <small>3D insights & predictions</small>
+                                </a>
+                                <a href="/deployment-hub" class="btn btn-danger btn-lg feature-btn glass-card" style="min-width: 180px;">
+                                    <i class="fas fa-rocket"></i><br>
+                                    <strong>🚀 Deploy Hub</strong><br>
+                                    <small>One-click deployment</small>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Repository Input Section -->
+                <div class="glass-card p-4 mb-4">
+                    <h3 class="mb-3"><i class="fab fa-github"></i> Repository Analysis</h3>
+                    <div class="row">
+                        <div class="col-md-9">
+                            <input type="text" 
+                                   class="form-control repo-input" 
+                                   id="repoUrl" 
+                                   placeholder="🔗 Enter GitHub repository URL (e.g., https://github.com/user/repo)"
+                                   value="">
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-primary w-100 feature-btn" onclick="loadRepository()" id="loadBtn">
+                                <i class="fas fa-download"></i> Analyze Repository
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <div class="loading" id="loadingIndicator">
+                            <div class="d-flex align-items-center">
+                                <div class="spinner-border text-primary me-3" role="status"></div>
+                                <span>Analyzing repository... This may take a moment</span>
+                            </div>
+                        </div>
+                        <div id="repoResponse"></div>
+                    </div>
+                </div>
+
+                <!-- Project Stats -->
+                <div class="glass-card p-4 mb-4" id="projectStats" style="display: none;">
+                    <h4><i class="fas fa-chart-bar"></i> Project Overview</h4>
+                    <div class="row" id="statsContainer">
+                        <!-- Stats will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Chat Interface -->
+                <div class="glass-card p-4">
+                    <h3 class="mb-3"><i class="fas fa-comments"></i> AI Assistant</h3>
+                    
+                    <!-- Quick Actions -->
+                    <div class="mb-3">
+                        <h6>Quick Analysis:</h6>
+                        <button class="btn btn-outline-primary btn-sm me-2 mb-2" onclick="askQuestion('What does this code do?')">
+                            📝 Code Overview
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm me-2 mb-2" onclick="askQuestion('Analyze security vulnerabilities')">
+                            🔒 Security Check
+                        </button>
+                        <button class="btn btn-outline-success btn-sm me-2 mb-2" onclick="askQuestion('Show me the API endpoints')">
+                            🌐 API Analysis
+                        </button>
+                        <button class="btn btn-outline-info btn-sm me-2 mb-2" onclick="askQuestion('Explain the project architecture')">
+                            🏗️ Architecture
+                        </button>
+                        <button class="btn btn-outline-warning btn-sm me-2 mb-2" onclick="generateDocumentation()">
+                            📚 Generate Docs
+                        </button>
+                    </div>
+
+                    <!-- Chat Messages -->
+                    <div class="chat-container" id="chatContainer">
+                        <div class="ai-message message">
+                            <strong>🤖 AI Assistant:</strong><br>
+                            Welcome! I'm your enhanced code analysis assistant. I can help you with:
+                            <ul class="mt-2 mb-0">
+                                <li>🔍 <strong>Multi-language code analysis</strong> (Python, JavaScript, Java, C++, and more)</li>
+                                <li>🛡️ <strong>Security vulnerability detection</strong></li>
+                                <li>📊 <strong>Project structure visualization</strong></li>
+                                <li>🌐 <strong>API endpoint discovery</strong></li>
+                                <li>📝 <strong>Automatic documentation generation</strong></li>
+                            </ul>
+                            <p class="mt-2 mb-0">Start by loading a GitHub repository above, then ask me anything about the code!</p>
+                        </div>
+                    </div>
+
+                    <!-- Chat Input -->
+                    <div class="mt-3">
+                        <div class="typing-indicator" id="typingIndicator">
+                            <strong>🤖 AI is typing</strong>
+                            <span></span><span></span><span></span>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" 
+                                   class="form-control repo-input" 
+                                   id="messageInput" 
+                                   placeholder="💬 Ask anything about the code..."
+                                   onkeypress="handleKeyPress(event)">
+                            <button class="btn btn-primary" onclick="sendMessage()">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 🚀 ADVANCED FEATURES SHOWCASE -->
+                <div class="row mt-5">
+                    <div class="col-md-12 text-center">
+                        <h3 class="mb-4"><i class="fas fa-star text-warning"></i> ✨ Next-Generation Features</h3>
+                        <div class="row">
+                            <div class="col-md-6 col-lg-3 mb-4">
+                                <div class="glass-card p-4 h-100">
+                                    <div class="mb-3">
+                                        <i class="fas fa-microphone fa-3x text-primary"></i>
+                                    </div>
+                                    <h5>🎙️ Voice-to-Code Analyzer</h5>
+                                    <p class="text-muted">Speak your questions and get instant AI responses with voice commands and multi-language support.</p>
+                                    <a href="/voice-analyzer" class="btn btn-primary btn-sm">Try Voice Analysis</a>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3 mb-4">
+                                <div class="glass-card p-4 h-100">
+                                    <div class="mb-3">
+                                        <i class="fas fa-users fa-3x text-success"></i>
+                                    </div>
+                                    <h5>👥 Real-time Collaboration</h5>
+                                    <p class="text-muted">Multi-user live editing, shared cursors, comment threads, and team code review sessions.</p>
+                                    <a href="/collaboration" class="btn btn-success btn-sm">Start Collaborating</a>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3 mb-4">
+                                <div class="glass-card p-4 h-100">
+                                    <div class="mb-3">
+                                        <i class="fas fa-robot fa-3x text-info"></i>
+                                    </div>
+                                    <h5>🤖 AI Code Assistant</h5>
+                                    <p class="text-muted">GitHub Copilot-style intelligent code completion with context-aware suggestions and bug fixes.</p>
+                                    <a href="/ai-assistant" class="btn btn-info btn-sm">Get AI Help</a>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3 mb-4">
+                                <div class="glass-card p-4 h-100">
+                                    <div class="mb-3">
+                                        <i class="fas fa-chart-line fa-3x text-warning"></i>
+                                    </div>
+                                    <h5>📊 Advanced Analytics</h5>
+                                    <p class="text-muted">3D visualizations, complexity heatmaps, AI-predicted bugs, and performance bottleneck detection.</p>
+                                    <a href="/advanced-analytics" class="btn btn-warning btn-sm">View Analytics</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row justify-content-center">
+                            <div class="col-md-6 col-lg-3 mb-4">
+                                <div class="glass-card p-4 h-100">
+                                    <div class="mb-3">
+                                        <i class="fas fa-rocket fa-3x text-danger"></i>
+                                    </div>
+                                    <h5>🚀 Deployment Hub</h5>
+                                    <p class="text-muted">One-click deployment to any platform with auto-generated configs and CI/CD pipelines.</p>
+                                    <a href="/deployment-hub" class="btn btn-danger btn-sm">Deploy Now</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-javascript.min.js"></script>
+    
+    <script>
+        let currentTheme = 'dark';
+        let isAnalyzing = false;
+        let projectData = null;
+
+        function toggleTheme() {
+            const body = document.getElementById('mainBody');
+            if (currentTheme === 'dark') {
+                body.className = 'light-theme';
+                currentTheme = 'light';
+            } else {
+                body.className = 'dark-theme';
+                currentTheme = 'dark';
+            }
+        }
+
+        function loadRepository() {
+            const repoUrl = document.getElementById('repoUrl').value.trim();
+            if (!repoUrl) {
+                alert('Please enter a repository URL');
+                return;
+            }
+
+            const loadBtn = document.getElementById('loadBtn');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const responseDiv = document.getElementById('repoResponse');
+
+            loadBtn.disabled = true;
+            loadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+            loadingIndicator.style.display = 'block';
+            isAnalyzing = true;
+
+            fetch('/chatbot', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `question=${encodeURIComponent(repoUrl)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                loadBtn.disabled = false;
+                loadBtn.innerHTML = '<i class="fas fa-download"></i> Analyze Repository';
+                loadingIndicator.style.display = 'none';
+                isAnalyzing = false;
+
+                responseDiv.innerHTML = `
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i> ${data.response}
+                    </div>
+                `;
+
+                // Load project stats
+                loadProjectStats();
+                
+                // Add success message to chat
+                addMessageToChat('system', data.response);
+            })
+            .catch(error => {
+                loadBtn.disabled = false;
+                loadBtn.innerHTML = '<i class="fas fa-download"></i> Analyze Repository';
+                loadingIndicator.style.display = 'none';
+                isAnalyzing = false;
+
+                responseDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i> Error: ${error.message}
+                    </div>
+                `;
+            });
+        }
+
+        function loadProjectStats() {
+            fetch('/api/project-info')
+            .then(response => response.json())
+            .then(data => {
+                projectData = data;
+                displayProjectStats(data);
+            })
+            .catch(error => console.error('Error loading project stats:', error));
+        }
+
+        function displayProjectStats(data) {
+            const statsContainer = document.getElementById('statsContainer');
+            const projectStats = document.getElementById('projectStats');
+
+            let statsHtml = '';
+
+            // Languages
+            if (data.languages && Object.keys(data.languages).length > 0) {
+                statsHtml += `
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <div class="stats-number">${Object.keys(data.languages).length}</div>
+                            <div>Languages</div>
+                            <div class="mt-2">
+                                ${Object.entries(data.languages).map(([lang, count]) => 
+                                    `<span class="language-badge">${lang} (${count})</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Files
+            if (data.metrics && data.metrics.total_files) {
+                statsHtml += `
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <div class="stats-number">${data.metrics.total_files}</div>
+                            <div>Total Files</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Lines of code
+            if (data.metrics && data.metrics.total_lines) {
+                statsHtml += `
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <div class="stats-number">${data.metrics.total_lines.toLocaleString()}</div>
+                            <div>Lines of Code</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Security issues
+            if (data.security_issues) {
+                const highIssues = data.security_issues.filter(i => i.severity === 'high').length;
+                const totalIssues = data.security_issues.length;
+                statsHtml += `
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <div class="stats-number text-${totalIssues > 0 ? 'warning' : 'success'}">${totalIssues}</div>
+                            <div>Security Issues</div>
+                            ${highIssues > 0 ? `<small class="text-danger">${highIssues} high priority</small>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (statsHtml) {
+                statsContainer.innerHTML = statsHtml;
+                projectStats.style.display = 'block';
+            }
+        }
+
+        function askQuestion(question) {
+            document.getElementById('messageInput').value = question;
+            sendMessage();
+        }
+
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (!message) return;
+
+            addMessageToChat('user', message);
+            messageInput.value = '';
+            
+            showTypingIndicator();
+
+            fetch('/get', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `msg=${encodeURIComponent(message)}`
+            })
+            .then(response => response.text())
+            .then(data => {
+                hideTypingIndicator();
+                addMessageToChat('ai', data);
+            })
+            .catch(error => {
+                hideTypingIndicator();
+                addMessageToChat('ai', `Error: ${error.message}`);
+            });
+        }
+
+        function addMessageToChat(sender, message) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            
+            if (sender === 'user') {
+                messageDiv.className = 'message user-message';
+                messageDiv.innerHTML = `<strong>👤 You:</strong><br>${message}`;
+            } else if (sender === 'ai') {
+                messageDiv.className = 'message ai-message';
+                messageDiv.innerHTML = `<strong>🤖 AI Assistant:</strong><br>${formatMessage(message)}`;
+            } else {
+                messageDiv.className = 'message ai-message';
+                messageDiv.innerHTML = `<strong>🔔 System:</strong><br>${message}`;
+            }
+            
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function formatMessage(message) {
+            // Format code blocks
+            message = message.replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code class="language-$1">$2</code></pre>');
+            
+            // Format inline code
+            message = message.replace(/`([^`]+)`/g, '<code>$1</code>');
+            
+            // Format lists
+            message = message.replace(/^\- (.+)$/gm, '<li>$1</li>');
+            message = message.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+            
+            // Format bold text
+            message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            return message;
+        }
+
+        function showTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'block';
+        }
+
+        function hideTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'none';
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function generateDocumentation() {
+            if (!projectData || !projectData.content || Object.keys(projectData.content).length === 0) {
+                alert('Please load a repository first');
+                return;
+            }
+
+            showTypingIndicator();
+            
+            fetch('/api/generate-readme')
+            .then(response => response.json())
+            .then(data => {
+                hideTypingIndicator();
+                if (data.readme) {
+                    addMessageToChat('ai', `📝 **Generated README.md:**\n\n${data.readme}`);
+                } else {
+                    addMessageToChat('ai', `❌ Error generating documentation: ${data.error}`);
+                }
+            })
+            .catch(error => {
+                hideTypingIndicator();
+                addMessageToChat('ai', `❌ Error: ${error.message}`);
+            });
+        }
+
+        function startVoiceCommand() {
+            if ('webkitSpeechRecognition' in window) {
+                const recognition = new webkitSpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US';
+
+                recognition.onstart = function() {
+                    addMessageToChat('system', '🎤 Voice recognition started. Please speak...');
+                };
+
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript;
+                    document.getElementById('messageInput').value = transcript;
+                    addMessageToChat('system', `🎤 Voice input: "${transcript}"`);
+                };
+
+                recognition.onerror = function(event) {
+                    addMessageToChat('system', `🎤 Voice recognition error: ${event.error}`);
+                };
+
+                recognition.start();
+            } else {
+                alert('Voice recognition not supported in this browser');
+            }
+        }
+
+        // 💰 COST TRACKING FUNCTIONS
+        function updateCostStats() {
+            fetch('/api/cost-stats')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('apiCalls').textContent = data.api_calls;
+                    document.getElementById('tokensUsed').textContent = data.tokens_used;
+                    document.getElementById('estimatedCost').textContent = data.estimated_cost_usd.toFixed(6);
+                })
+                .catch(error => console.log('Cost stats error:', error));
+        }
+
+        // Update cost stats every 10 seconds
+        setInterval(updateCostStats, 10000);
+        updateCostStats(); // Initial load
+
+        // Initialize with sample repo URL
+        document.getElementById('repoUrl').value = 'https://github.com/abhishekkumar62000/BreakUp-Recovery-AI-Multi-Agents-Project';
+        
+        // 🚀 ADVANCED FEATURES SHOWCASE
+        function showFeatureNotification() {
+            const notification = document.createElement('div');
+            notification.innerHTML = `
+                <div class="alert alert-info alert-dismissible fade show position-fixed" style="top: 20px; right: 20px; z-index: 9999; max-width: 350px;">
+                    <h6><i class="fas fa-star text-warning"></i> ✨ New Advanced Features Available!</h6>
+                    <ul class="mb-2" style="font-size: 0.9em;">
+                        <li>🎙️ <strong>Voice-to-Code Analyzer</strong> - Speak your questions!</li>
+                        <li>👥 <strong>Real-time Collaboration</strong> - Team coding sessions!</li>
+                        <li>🤖 <strong>AI Code Assistant</strong> - Smart autocomplete!</li>
+                        <li>📊 <strong>3D Analytics Dashboard</strong> - Visual insights!</li>
+                        <li>🚀 <strong>One-click Deployment</strong> - Deploy anywhere!</li>
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            // Auto-dismiss after 8 seconds
+            setTimeout(() => {
+                const alert = notification.querySelector('.alert');
+                if (alert) {
+                    alert.classList.remove('show');
+                    setTimeout(() => notification.remove(), 150);
+                }
+            }, 8000);
+        }
+        
+        // Show notification after 3 seconds
+        setTimeout(showFeatureNotification, 3000);
+        
+        // Add feature demo functions
+        function demoVoiceFeature() {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance("Welcome to the Voice Code Analyzer! You can now speak your questions and get AI-powered responses about your code. Try saying: Analyze my Python code for security issues.");
+                speechSynthesis.speak(utterance);
+            }
+        }
+        
+        function demoCollaboration() {
+            alert("🎉 Real-time Collaboration is ready! You can now:\n\n• Share code editing sessions with your team\n• See live cursors from other users\n• Add comments on specific lines\n• Chat while reviewing code together\n\nClick on the Collaboration button to start!");
+        }
+        
+        // Add feature hints to buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            const featureButtons = document.querySelectorAll('.feature-btn');
+            featureButtons.forEach(button => {
+                button.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px) scale(1.05)';
+                });
+                button.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 AI Code Assistant - Enhanced Code Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/editor/editor.main.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+        .main-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .ai-header {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 15px;
+            padding: 30px;
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .ai-avatar {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, #ff9a9e, #fecfef);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2rem;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .chat-container {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding-right: 10px;
+        }
+        .message {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 15px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        .message.user {
+            background: rgba(255, 255, 255, 0.2);
+            margin-left: auto;
+            text-align: right;
+        }
+        .message.ai {
+            background: rgba(255, 255, 255, 0.1);
+            margin-right: auto;
+        }
+        .message.system {
+            background: rgba(255, 255, 255, 0.05);
+            margin: 0 auto;
+            text-align: center;
+            font-style: italic;
+            max-width: 90%;
+        }
+        .chat-input-container {
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            border-radius: 25px;
+            padding: 15px 20px;
+        }
+        .chat-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .send-button {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+            border: none;
+            color: white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .send-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .code-editor-container {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .suggestion-card {
+            background: linear-gradient(135deg, #a8edea, #fed6e3);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 10px 0;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .suggestion-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .quick-actions {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+        }
+        .action-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            border-radius: 25px;
+            padding: 10px 20px;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        .action-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        .nav-pill {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 25px;
+            padding: 10px 20px;
+            margin: 0 5px;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .nav-pill:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            color: white;
+        }
+        .feature-stats {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .typing-indicator {
+            display: none;
+            font-style: italic;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .code-preview {
+            background: #2d3748;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Monaco', 'Menlo', monospace;
+            color: #e2e8f0;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <!-- Navigation -->
+        <div class="d-flex justify-content-center mb-4">
+            <a href="/" class="nav-pill"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="/voice-analyzer" class="nav-pill"><i class="fas fa-microphone"></i> Voice</a>
+            <a href="/collaboration" class="nav-pill"><i class="fas fa-users"></i> Collaboration</a>
+            <a href="/advanced-analytics" class="nav-pill"><i class="fas fa-chart-line"></i> Analytics</a>
+            <a href="/deployment-hub" class="nav-pill"><i class="fas fa-rocket"></i> Deploy</a>
+        </div>
+
+        <div class="main-card p-4">
+            <h1 class="text-center mb-4">
+                <i class="fas fa-robot text-primary"></i>
+                🤖 AI Code Assistant
+            </h1>
+
+            <!-- AI Header -->
+            <div class="ai-header">
+                <div class="ai-avatar">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h3>Your Smart Coding Companion</h3>
+                <p class="mb-0">Get intelligent code suggestions, explanations, and optimizations powered by advanced AI</p>
+            </div>
+
+            <div class="row">
+                <!-- Chat Interface -->
+                <div class="col-md-8">
+                    <div class="chat-container">
+                        <h5><i class="fas fa-comments"></i> AI Chat Assistant</h5>
+                        <div id="chatMessages" class="chat-messages">
+                            <div class="message system">
+                                🚀 AI Assistant is ready! Ask me anything about your code, request optimizations, or get programming help.
+                            </div>
+                        </div>
+                        <div class="typing-indicator" id="typingIndicator">
+                            <i class="fas fa-circle"></i>
+                            <i class="fas fa-circle"></i>
+                            <i class="fas fa-circle"></i>
+                            AI is typing...
+                        </div>
+                        <div class="chat-input-container">
+                            <input type="text" id="chatInput" class="chat-input" 
+                                   placeholder="Ask me anything about your code..." 
+                                   onkeypress="handleKeyPress(event)">
+                            <button class="send-button" onclick="sendMessage()">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions & Code Editor -->
+                <div class="col-md-4">
+                    <div class="quick-actions">
+                        <h5><i class="fas fa-bolt"></i> Quick Actions</h5>
+                        <div class="d-flex flex-wrap justify-content-center">
+                            <button class="action-button" onclick="quickAction('explain')">
+                                <i class="fas fa-info-circle"></i> Explain Code
+                            </button>
+                            <button class="action-button" onclick="quickAction('optimize')">
+                                <i class="fas fa-tachometer-alt"></i> Optimize
+                            </button>
+                            <button class="action-button" onclick="quickAction('debug')">
+                                <i class="fas fa-bug"></i> Debug
+                            </button>
+                            <button class="action-button" onclick="quickAction('refactor')">
+                                <i class="fas fa-code"></i> Refactor
+                            </button>
+                            <button class="action-button" onclick="quickAction('document')">
+                                <i class="fas fa-file-alt"></i> Document
+                            </button>
+                            <button class="action-button" onclick="quickAction('test')">
+                                <i class="fas fa-vial"></i> Generate Tests
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- AI Statistics -->
+                    <div class="feature-stats text-white">
+                        <h6><i class="fas fa-chart-bar"></i> AI Assistant Stats</h6>
+                        <div class="d-flex justify-content-between">
+                            <span>Questions Asked:</span>
+                            <span id="questionCount">0</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Suggestions Given:</span>
+                            <span id="suggestionCount">0</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Code Optimized:</span>
+                            <span id="optimizationCount">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Code Editor for AI Interactions -->
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <h5><i class="fas fa-code text-primary"></i> Interactive Code Editor</h5>
+                    <div class="code-editor-container">
+                        <div id="aiCodeEditor" style="height: 300px;"></div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <div>
+                            <button class="btn btn-primary" onclick="analyzeCurrentCode()">
+                                <i class="fas fa-search"></i> Analyze This Code
+                            </button>
+                            <button class="btn btn-success" onclick="getCodeSuggestions()">
+                                <i class="fas fa-lightbulb"></i> Get AI Suggestions
+                            </button>
+                        </div>
+                        <div>
+                            <span class="badge bg-info">Lines: <span id="lineCount">0</span></span>
+                            <span class="badge bg-warning">Language: <span id="currentLanguage">Python</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Suggestions -->
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <h5><i class="fas fa-magic text-success"></i> Smart Suggestions</h5>
+                    <div id="aiSuggestions">
+                        <div class="suggestion-card" onclick="applySuggestion('performance')">
+                            <h6><i class="fas fa-rocket text-primary"></i> Performance Optimization</h6>
+                            <p class="mb-0">Use list comprehensions instead of loops for better performance</p>
+                        </div>
+                        <div class="suggestion-card" onclick="applySuggestion('security')">
+                            <h6><i class="fas fa-shield-alt text-danger"></i> Security Enhancement</h6>
+                            <p class="mb-0">Add input validation to prevent security vulnerabilities</p>
+                        </div>
+                        <div class="suggestion-card" onclick="applySuggestion('readability')">
+                            <h6><i class="fas fa-eye text-info"></i> Code Readability</h6>
+                            <p class="mb-0">Add descriptive comments and improve variable naming</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Learning Progress -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h6><i class="fas fa-graduation-cap"></i> AI Learning Progress</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label>Code Pattern Recognition</label>
+                                <div class="progress">
+                                    <div class="progress-bar bg-success" style="width: 85%">85%</div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label>Error Detection</label>
+                                <div class="progress">
+                                    <div class="progress-bar bg-warning" style="width: 78%">78%</div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label>Optimization Suggestions</label>
+                                <div class="progress">
+                                    <div class="progress-bar bg-info" style="width: 92%">92%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h6><i class="fas fa-cog"></i> AI Configuration</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="autoSuggestions" checked>
+                                <label class="form-check-label" for="autoSuggestions">
+                                    Auto Suggestions
+                                </label>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="realTimeAnalysis" checked>
+                                <label class="form-check-label" for="realTimeAnalysis">
+                                    Real-time Analysis
+                                </label>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="learningMode" checked>
+                                <label class="form-check-label" for="learningMode">
+                                    Learning Mode
+                                </label>
+                            </div>
+                            <div class="mt-3">
+                                <label for="aiPersonality" class="form-label">AI Personality</label>
+                                <select class="form-select" id="aiPersonality">
+                                    <option value="helpful">Helpful Assistant</option>
+                                    <option value="mentor">Code Mentor</option>
+                                    <option value="expert">Expert Developer</option>
+                                    <option value="friendly">Friendly Tutor</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
+    <script>
+        let editor = null;
+        let questionCount = 0;
+        let suggestionCount = 0;
+        let optimizationCount = 0;
+
+        // Initialize Monaco Editor
+        function initializeEditor() {
+            require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' } });
+            require(['vs/editor/editor.main'], function() {
+                editor = monaco.editor.create(document.getElementById('aiCodeEditor'), {
+                    value: `# Welcome to AI-Powered Code Analysis!
+def fibonacci(n):
+    """Calculate fibonacci sequence"""
+    if n <= 1:
+        return n
+    return fibonacci(n-1) + fibonacci(n-2)
+
+# Ask AI: "How can I optimize this recursive function?"
+print(fibonacci(10))`,
+                    language: 'python',
+                    theme: 'vs-dark',
+                    automaticLayout: true,
+                    minimap: { enabled: false },
+                    fontSize: 14,
+                    wordWrap: 'on'
+                });
+                
+                // Update line count on change
+                editor.onDidChangeModelContent(function() {
+                    updateLineCount();
+                    if (document.getElementById('realTimeAnalysis').checked) {
+                        debounceAnalysis();
+                    }
+                });
+                
+                updateLineCount();
+            });
+        }
+
+        function updateLineCount() {
+            if (editor) {
+                const lineCount = editor.getModel().getLineCount();
+                document.getElementById('lineCount').textContent = lineCount;
+            }
+        }
+
+        let analysisTimeout;
+        function debounceAnalysis() {
+            clearTimeout(analysisTimeout);
+            analysisTimeout = setTimeout(autoAnalyze, 2000);
+        }
+
+        function autoAnalyze() {
+            if (document.getElementById('autoSuggestions').checked) {
+                generateAutoSuggestions();
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addMessage('user', message);
+            input.value = '';
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            // Get AI response
+            try {
+                const response = await getAIResponse(message);
+                hideTypingIndicator();
+                addMessage('ai', response);
+                questionCount++;
+                updateStats();
+            } catch (error) {
+                hideTypingIndicator();
+                addMessage('system', 'Sorry, I encountered an error. Please try again.');
+            }
+        }
+
+        function addMessage(type, content) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = type === 'user' ? '👤' : type === 'ai' ? '🤖' : '⚡';
+            
+            messageDiv.innerHTML = `
+                <div class="d-flex align-items-start gap-2">
+                    <span>${icon}</span>
+                    <div class="flex-grow-1">
+                        <div>${formatMessage(content)}</div>
+                        <small class="opacity-75">${timestamp}</small>
+                    </div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function formatMessage(content) {
+            // Format code blocks
+            content = content.replace(/```(\w+)?\n([\s\S]*?)```/g, function(match, lang, code) {
+                return `<div class="code-preview"><pre><code>${code.trim()}</code></pre></div>`;
+            });
+            
+            // Format inline code
+            content = content.replace(/`([^`]+)`/g, '<code class="bg-dark text-light px-2 py-1 rounded">$1</code>');
+            
+            return content;
+        }
+
+        function showTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'block';
+        }
+
+        function hideTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'none';
+        }
+
+        async function getAIResponse(message) {
+            const code = editor ? editor.getValue() : '';
+            const language = document.getElementById('currentLanguage').textContent;
+            
+            const response = await fetch('/api/ai/code-suggestions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    code: code,
+                    language: language.toLowerCase(),
+                    message: message
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            return data.suggestions || 'I understand your question about the code. Here are my thoughts: ' + message;
+        }
+
+        function quickAction(action) {
+            const actionMessages = {
+                'explain': 'Please explain what this code does step by step',
+                'optimize': 'How can I optimize this code for better performance?',
+                'debug': 'Help me debug this code. What issues do you see?',
+                'refactor': 'Suggest ways to refactor this code for better maintainability',
+                'document': 'Generate documentation and comments for this code',
+                'test': 'Generate unit tests for this code'
+            };
+            
+            document.getElementById('chatInput').value = actionMessages[action];
+            sendMessage();
+        }
+
+        function analyzeCurrentCode() {
+            if (!editor) {
+                alert('Please load some code in the editor first.');
+                return;
+            }
+            
+            document.getElementById('chatInput').value = 'Analyze this code and provide insights on quality, performance, and potential improvements';
+            sendMessage();
+        }
+
+        async function getCodeSuggestions() {
+            if (!editor) {
+                alert('Please load some code in the editor first.');
+                return;
+            }
+            
+            const code = editor.getValue();
+            const language = document.getElementById('currentLanguage').textContent;
+            
+            try {
+                const response = await fetch('/api/ai/code-suggestions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        code: code,
+                        language: language.toLowerCase()
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.suggestions) {
+                    addMessage('ai', `Here are my suggestions for your ${language} code:\n\n${data.suggestions}`);
+                    suggestionCount++;
+                    updateStats();
+                }
+            } catch (error) {
+                addMessage('system', 'Failed to get code suggestions. Please try again.');
+            }
+        }
+
+        function generateAutoSuggestions() {
+            // This would generate context-aware suggestions based on current code
+            const suggestions = [
+                { type: 'performance', title: 'Performance Tip', content: 'Consider using caching for recursive functions' },
+                { type: 'security', title: 'Security Note', content: 'Validate input parameters to prevent errors' },
+                { type: 'style', title: 'Code Style', content: 'Consider adding type hints for better code clarity' }
+            ];
+            
+            // Update suggestions UI (simplified)
+            suggestionCount++;
+            updateStats();
+        }
+
+        function applySuggestion(type) {
+            const suggestions = {
+                'performance': 'Applied performance optimization suggestion',
+                'security': 'Applied security enhancement suggestion',
+                'readability': 'Applied code readability improvement'
+            };
+            
+            addMessage('system', suggestions[type] + '. Check the code editor for changes.');
+            optimizationCount++;
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('questionCount').textContent = questionCount;
+            document.getElementById('suggestionCount').textContent = suggestionCount;
+            document.getElementById('optimizationCount').textContent = optimizationCount;
+        }
+
+        // Initialize everything when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeEditor();
+            
+            // Welcome message
+            setTimeout(() => {
+                addMessage('ai', 'Hello! I\'m your AI coding assistant. I can help you analyze code, suggest improvements, debug issues, and answer programming questions. What would you like to work on today?');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
