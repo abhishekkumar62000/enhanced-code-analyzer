@@ -1,7 +1,7 @@
 @echo off
 echo ================================
 echo Source Code Analysis AI Setup
-echo ================================
+echo ================================ 
 
 echo Step 1: Checking if .env file exists...
 if not exist .env (
