@@ -2,7 +2,7 @@
 REM Enhanced Code Analyzer - Auto Deployment Script
 REM This script automates the deployment process to free cloud platforms
 
-echo ===============================================
+echo =============================================== 
 echo 🚀 Enhanced Code Analyzer - Free Cloud Deploy
 echo ===============================================
 echo.
