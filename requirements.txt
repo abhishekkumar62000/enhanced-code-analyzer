@@ -6,6 +6,6 @@ GitPython
 python-dotenv       
 requests  
 beautifulsoup4  
-chromadb  
+chromadb
 gunicorn  
 gitpython==3.1.43
