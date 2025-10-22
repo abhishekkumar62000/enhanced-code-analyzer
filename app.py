@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os
 from src.helper import repo_ingestion
 from flask import Flask, render_template, jsonify, request
-from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI 
 from langchain.memory import ConversationSummaryMemory
 from langchain.chains import ConversationalRetrievalChain
 
