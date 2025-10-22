@@ -3,7 +3,7 @@ tiktoken
 flask  
 flask-socketio==5.3.0 
 GitPython  
-python-dotenv
+python-dotenv 
 requests 
 beautifulsoup4
 chromadb
