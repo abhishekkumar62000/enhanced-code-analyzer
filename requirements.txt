@@ -2,7 +2,7 @@
 tiktoken 
 flask
 flask-socketio==5.3.0     
-GitPython     
+GitPython      
 python-dotenv       
 requests  
 beautifulsoup4   
