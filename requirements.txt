@@ -5,7 +5,7 @@ flask-socketio==5.3.0
 GitPython  
 python-dotenv  
 requests 
-beautifulsoup4 
+beautifulsoup4  
 chromadb
 gunicorn 
 gitpython==3.1.43
