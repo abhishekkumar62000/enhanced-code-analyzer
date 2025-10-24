@@ -1,4 +1,4 @@
-       from langchain_community.vectorstores import Chroma
+from langchain_community.vectorstores import Chroma
 from src.helper import load_embedding
 from dotenv import load_dotenv
 import os
