@@ -1,4 +1,4 @@
-             openai>=1.0.0  
+              openai>=1.0.0  
 tiktoken  
 flask 
 flask-socketio==5.3.0     
