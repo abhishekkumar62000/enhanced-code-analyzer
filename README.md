@@ -1,5 +1,6 @@
-<<<<<<< HEAD
-# End-to-end-Source-Code-Analysis-Generative-AI
+ <<<<<<< HEAD
+# End-to-end-Source-Code-Analysis-Generative-AI Project 
+
 
 # How to run?
 ### STEPS:
